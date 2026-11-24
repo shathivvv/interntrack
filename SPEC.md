@@ -42,6 +42,7 @@ Also: `rejected` (they said no), `withdrawn` (I pulled out before an offer).
 - **Ghosted is derived, not stored:** `status = 'applied'` and `date_applied` is more
   than 30 days ago. Using date_applied (not updated_at) means small edits like fixing
   a typo don't reset the 30-day clock.
+- Dates (Zod): date_applied can't be in the future; follow_up_date can't be before date_applied.
 
 ### Why text + CHECK, not a Postgres enum
 Adding or renaming a status later is a one-line constraint change, where enums are
@@ -56,18 +57,18 @@ Added later: embeddings (B4), agent actions (B5).
 
 ## 4. API routes
 ### Auth
-- `POST /auth/register`: create an account
-- `POST /auth/login`: log in and set an httpOnly cookie
-- `POST /auth/logout` 🔒: clear the cookie
-- `GET /auth/me` 🔒: return the logged-in user. React calls it on page load,
+- `POST /api/auth/register`: create an account
+- `POST /api/auth/login`: log in and set an httpOnly cookie
+- `POST /api/auth/logout` 🔒: clear the cookie
+- `GET /api/auth/me` 🔒: return the logged-in user. React calls it on page load,
   because it can't read the httpOnly cookie itself.
 
 ### Applications (all 🔒)
-- `GET /applications`: list my applications
-- `POST /applications`: create one, linked to me
-- `GET /applications/:id`: one application's full details
-- `PATCH /applications/:id`: update only the fields sent
-- `DELETE /applications/:id`: delete one
+- `GET /api/applications`: list my applications
+- `POST /api/applications`: create one, linked to me
+- `GET /api/applications/:id`: one application's full details
+- `PATCH /api/applications/:id`: update only the fields sent
+- `DELETE /api/applications/:id`: delete one
 
 ### Security rules
 - `user_id` always comes from the login session, **never** from the request.
@@ -75,11 +76,13 @@ Added later: embeddings (B4), agent actions (B5).
 - Someone else's application → **404**, not 403 (403 would confirm it exists).
 
 ### Errors
-Every error returns the same JSON shape: `{ "error": "message" }`.
+Every error returns `{ "error": "message" }`.
+Validation errors (400) also include details:
+`{ "error": "Validation failed", "details": [{ "path": "role", "message": "..." }] }` 
 
 ### Added later
-- B3: `GET /applications?status=...` (filters as query parameters)
-- B4: `POST /applications/:id/analyze`. The result is stored on the application row,
+- B3: `GET /api/applications?status=...` (filters as query parameters)
+- B4: `POST /api/applications/:id/analyze`. The result is stored on the application row,
   so Claude runs once per job, not on every page load, and evals have a saved
   baseline. **Editing job_description clears analysis_result.**
 - B5: ask (RAG) and agent routes
@@ -90,11 +93,8 @@ Claude and Voyage are called from **Express only**.
 React runs in the visitor's browser, so any key there could be read with DevTools.
 Express runs on the server, so its keys never leave it.
 
-### Open decision (settle in B1, before auth)
-vercel.app and onrender.com are different domains, so browsers may block the session
-cookie as a third-party cookie. Plan: a Vercel rewrite (vercel.json) proxies `/api/*`
-to Render, so the cookie stays first-party on one domain.
-
+### Decided in B1: same-origin API
+vercel.json rewrites /api/* to Render, so the session cookie stays first-party (live since B1).
 ### Known limitation
 If Render's free plan sleeps the service when idle, the first request after a quiet
 period can be slow. That's not a bug.
