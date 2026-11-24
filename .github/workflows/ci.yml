@@ -1,0 +1,71 @@
+# Runs on every pull request and every push to main.
+# A PR is only safe to merge when both jobs are green.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  server:
+    name: Server tests
+    runs-on: ubuntu-latest
+
+    # A throwaway Postgres just for this run. It has pgvector built in, which
+    # B4 needs, and it starts empty every time, so tests can never touch real data.
+    # Keep the major version in step with Neon's (Neon dashboard → Settings).
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: interntrack_test
+        ports:
+          - 5432:5432
+        # Wait until Postgres accepts connections before the steps run.
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: server
+
+    env:
+      # Local to the CI machine; not a secret. No SSL because it never leaves the runner.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/interntrack_test
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      # npm ci installs exactly what package-lock.json says (and fails if it's out of date).
+      - run: npm ci
+      - run: node src/migrate.js
+      - run: npm test
+
+  client:
+    name: Client build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      # If the React app doesn't build, it can't be deployed to Vercel.
+      - run: npm run build
