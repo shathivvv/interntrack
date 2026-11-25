@@ -5,7 +5,22 @@ import {
   updateApplicationSchema,
   checkDates,
   validationError,
+  listQuerySchema,
+  STATUSES,
 } from "../validation/applications.js";
+
+// Each allowed ?sort= value maps to a fixed ORDER BY. The user picks a key, never SQL text.
+// "id DESC" at the end breaks ties, so the order is always the same between requests.
+const ORDER_BY = {
+  newest: "created_at DESC, id DESC",
+  date_applied: "date_applied DESC NULLS LAST, id DESC",
+  follow_up: "follow_up_date ASC NULLS LAST, id DESC",
+  company: "lower(company_name) ASC, id DESC",
+};
+
+// In LIKE patterns, % and _ are wildcards. Escape them (and the escape character itself)
+// so searching for "100%" finds the text "100%", not everything starting with "100".
+const escapeLike = (text) => text.replace(/[\\%_]/g, (ch) => `\\${ch}`);
 
 // Columns sent back to the client. user_id is left out: the client already knows who it is.
 const COLUMNS = `id, company_name, role, status, job_description, location, salary,
@@ -25,13 +40,46 @@ export function applicationsRouter({ authenticate }) {
   const router = Router();
   router.use(authenticate);
 
-  // GET /api/applications — list mine, newest first.
+  // GET /api/applications?q=&status=&sort= — list mine, optionally searched, filtered and sorted.
   router.get("/", async (req, res) => {
+    const parsed = listQuerySchema.safeParse(req.query);
+    if (!parsed.success) return res.status(400).json(validationError(parsed.error));
+    const { q, status, sort } = parsed.data;
+
+    // Build the WHERE clause from fixed pieces; every user value goes in as a $n parameter.
+    const conditions = ["user_id = $1"];
+    const params = [req.user.id];
+    if (status) {
+      params.push(status);
+      conditions.push(`status = $${params.length}`);
+    }
+    if (q) {
+      params.push(`%${escapeLike(q)}%`);
+      const p = `$${params.length}`;
+      // ILIKE = case-insensitive LIKE. The same parameter is reused for each column.
+      conditions.push(
+        `(company_name ILIKE ${p} OR role ILIKE ${p} OR location ILIKE ${p} OR job_description ILIKE ${p})`,
+      );
+    }
+
     const { rows } = await pool.query(
-      `SELECT ${COLUMNS} FROM applications WHERE user_id = $1 ORDER BY created_at DESC, id DESC`,
-      [req.user.id],
+      `SELECT ${COLUMNS} FROM applications WHERE ${conditions.join(" AND ")} ORDER BY ${ORDER_BY[sort]}`,
+      params,
     );
     res.json(rows);
+  });
+
+  // GET /api/applications/summary — how many of mine are in each status (for the filter chips).
+  // Registered before "/:id", otherwise Express would treat "summary" as an id.
+  router.get("/summary", async (req, res) => {
+    const { rows } = await pool.query(
+      "SELECT status, count(*)::int AS count FROM applications WHERE user_id = $1 GROUP BY status",
+      [req.user.id],
+    );
+    const byStatus = Object.fromEntries(STATUSES.map((s) => [s, 0]));
+    for (const row of rows) byStatus[row.status] = row.count;
+    const total = rows.reduce((sum, row) => sum + row.count, 0);
+    res.json({ total, by_status: byStatus });
   });
 
   // GET /api/applications/:id — one of mine.

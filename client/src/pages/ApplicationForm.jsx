@@ -42,6 +42,8 @@ export default function ApplicationForm() {
   }, [id, isEdit, expire])
 
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  // Where Back, Cancel and an unchanged save go: the detail page when editing, the list when adding.
+  const backTo = isEdit ? `/applications/${id}` : '/'
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -53,15 +55,15 @@ export default function ApplicationForm() {
       body = Object.fromEntries(
         Object.keys(form).filter((k) => form[k] !== original[k]).map((k) => [k, toApi(form[k])]),
       )
-      if (Object.keys(body).length === 0) return navigate('/')
+      if (Object.keys(body).length === 0) return navigate(backTo)
     } else {
       body = Object.fromEntries(Object.entries(form).map(([k, v]) => [k, toApi(v)]))
     }
 
     setSubmitting(true)
     try {
-      await api(isEdit ? `/applications/${id}` : '/applications', { method: isEdit ? 'PATCH' : 'POST', body })
-      navigate('/')
+      const saved = await api(isEdit ? `/applications/${id}` : '/applications', { method: isEdit ? 'PATCH' : 'POST', body })
+      navigate(`/applications/${saved.id}`) // show what was just saved
     } catch (err) {
       if (err.status === 401) return expire()
       setError(err)
@@ -91,7 +93,7 @@ export default function ApplicationForm() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link to="/" className="text-sm text-slate-500 hover:text-slate-700">← Back</Link>
+      <Link to={backTo} className="text-sm text-slate-500 hover:text-slate-700">← Back</Link>
       <h1 className="mt-2 mb-5 text-xl font-semibold text-slate-900">{isEdit ? 'Edit application' : 'Add application'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -127,7 +129,7 @@ export default function ApplicationForm() {
         </section>
 
         <div className="flex justify-end gap-3">
-          <Link to="/" className="btn-secondary">Cancel</Link>
+          <Link to={backTo} className="btn-secondary">Cancel</Link>
           <button className="btn-primary" disabled={submitting}>
             {submitting ? 'Saving…' : isEdit ? 'Save changes' : 'Add application'}
           </button>
