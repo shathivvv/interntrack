@@ -1,26 +1,29 @@
-import { useEffect, useState } from 'react'
+import { Navigate, Route, Routes } from 'react-router'
+import { GuestOnly, Layout, RequireAuth } from './components.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+import ApplicationsList from './pages/ApplicationsList.jsx'
+import ApplicationForm from './pages/ApplicationForm.jsx'
 
-function App() {
-  // 'checking' until the request finishes, then 'ok' or 'unreachable'.
-  const [apiStatus, setApiStatus] = useState('checking')
-
-  // Runs once after the first render: ask Express whether it is up.
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json()
-      })
-      .then((data) => setApiStatus(data.status))
-      .catch(() => setApiStatus('unreachable'))
-  }, [])
-
+// Which page shows for which URL. Vercel sends every URL to index.html
+// (the second rule in vercel.json), and this decides what to render.
+export default function App() {
   return (
-    <main>
-      <h1>InternTrack</h1>
-      <p>API: {apiStatus}</p>
-    </main>
+    <Routes>
+      <Route element={<GuestOnly />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
+
+      <Route element={<RequireAuth />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<ApplicationsList />} />
+          <Route path="/applications/new" element={<ApplicationForm />} />
+          <Route path="/applications/:id" element={<ApplicationForm />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
-
-export default App
