@@ -49,6 +49,15 @@ export const updateApplicationSchema = applicationFields
   .partial()
   .refine((body) => Object.keys(body).length > 0, { message: "Send at least one field to update" });
 
+// Query string for GET /api/applications: ?q=bank&status=applied&sort=follow_up
+// Everything is optional; unknown values are a 400 rather than silently ignored.
+export const SORTS = ["newest", "date_applied", "follow_up", "company"];
+export const listQuerySchema = z.strictObject({
+  q: z.string().trim().max(100).optional(),
+  status: z.enum(STATUSES).optional(),
+  sort: z.enum(SORTS).default("newest"),
+});
+
 // Today's date in Malaysia as "YYYY-MM-DD" (en-CA formats dates that way).
 function todayInMalaysia() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" });

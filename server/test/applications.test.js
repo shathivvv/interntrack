@@ -153,3 +153,52 @@ test("a body that isn't valid JSON gets a JSON 400, not a crash", async () => {
   assert.equal(res.status, 400);
   assert.deepEqual(res.body, { error: "Request body is not valid JSON" });
 });
+
+// --- B3: search, filter, sort, summary ---
+
+async function seed() {
+  const make = (overrides) => as(alice).post("/api/applications", validApplication(overrides));
+  await make({ company_name: "CIMB", role: "Software Intern", status: "applied", date_applied: "2026-11-20", follow_up_date: "2026-11-30" });
+  await make({ company_name: "WORQ", role: "Software Intern", status: "applied", date_applied: "2026-11-25", follow_up_date: "2026-11-27" });
+  await make({ company_name: "LuuWu", role: "AI Intern", status: "interviewing", job_description: "Build RAG pipelines. 100% remote." });
+  await make({ company_name: "Acme", role: "QA Intern", status: "saved", job_description: "Test 1000 things." });
+  await as(bob).post("/api/applications", validApplication({ company_name: "Bob Bank", status: "applied" }));
+}
+
+const names = (res) => res.body.map((a) => a.company_name);
+
+test("search matches company, role or job description, case-insensitively, own rows only", async () => {
+  await seed();
+  assert.deepEqual(names(await as(alice).get("/api/applications?q=rag")), ["LuuWu"]); // in the JD
+  assert.deepEqual(names(await as(alice).get("/api/applications?q=SOFTWARE&sort=company")), ["CIMB", "WORQ"]);
+  assert.deepEqual(names(await as(alice).get("/api/applications?q=bank")), []); // Bob's row never appears
+});
+
+test("search treats % and _ as plain text, not wildcards", async () => {
+  await seed();
+  // Unescaped, "100%" would also match "1000 things".
+  assert.deepEqual(names(await as(alice).get("/api/applications?q=100%25")), ["LuuWu"]);
+});
+
+test("status filter and sort options", async () => {
+  await seed();
+  assert.deepEqual(names(await as(alice).get("/api/applications?status=applied&sort=company")), ["CIMB", "WORQ"]);
+
+  // Soonest follow-up first; rows with no follow-up date go last.
+  const byFollowUp = names(await as(alice).get("/api/applications?sort=follow_up"));
+  assert.deepEqual(byFollowUp.slice(0, 2), ["WORQ", "CIMB"]);
+
+  const bad = await as(alice).get("/api/applications?status=ghosted");
+  assert.equal(bad.status, 400);
+  assert.equal((await as(alice).get("/api/applications?sort=DROP TABLE")).status, 400);
+});
+
+test("summary counts only the caller's applications, by status", async () => {
+  await seed();
+  const res = await as(alice).get("/api/applications/summary");
+  assert.equal(res.status, 200);
+  assert.equal(res.body.total, 4);
+  assert.equal(res.body.by_status.applied, 2);
+  assert.equal(res.body.by_status.interviewing, 1);
+  assert.equal(res.body.by_status.offer, 0);
+});
