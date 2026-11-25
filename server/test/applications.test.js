@@ -138,8 +138,8 @@ test("DELETE removes only the caller's own application", async () => {
   assert.equal(gone.status, 404);
 });
 
-test("the real app refuses every applications route until auth exists", async () => {
-  const realApp = createApp(); // uses requireAuth
+test("the real app ignores the test header: no session cookie means 401", async () => {
+  const realApp = createApp(); // uses the real requireAuth
   const res = await request(realApp).get("/api/applications").set("x-test-user-id", String(alice));
   assert.equal(res.status, 401);
 });

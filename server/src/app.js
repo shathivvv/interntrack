@@ -1,7 +1,9 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import pool from "./db.js";
 import { requireAuth } from "./middleware/auth.js";
 import { applicationsRouter } from "./routes/applications.js";
+import { authRouter } from "./routes/auth.js";
 
 // Builds the Express app. index.js starts it; tests import it and call routes
 // with supertest without opening a real port.
@@ -13,6 +15,8 @@ export function createApp({ authenticate = requireAuth } = {}) {
 
   // Parse JSON request bodies into req.body (needed for POST/PATCH).
   app.use(express.json());
+  // Parse the Cookie header into req.cookies (the session cookie lives there).
+  app.use(cookieParser());
 
   // Every route lives under /api, so the Vite dev proxy and the Vercel rewrite
   // can forward /api/* to this server without changing the path.
@@ -26,6 +30,7 @@ export function createApp({ authenticate = requireAuth } = {}) {
     }
   });
 
+  app.use("/api/auth", authRouter({ authenticate }));
   app.use("/api/applications", applicationsRouter({ authenticate }));
 
   // Unknown routes get the spec's error shape instead of Express's HTML page.
