@@ -2,7 +2,7 @@
 
 **A job application tracker I'm building to run my own internship search.** It keeps every application and follow-up in one place, and it's growing an AI layer that scores how well a role fits my resume.
 
-**Live:** [interntrack-psi.vercel.app](https://interntrack-psi.vercel.app) · **Status:** in active development (see [Roadmap](#roadmap))
+**Live:** [interntrack-psi.vercel.app](https://interntrack-psi.vercel.app) (create an account to try it; your data is visible only to you) · **Status:** in active development (see [Roadmap](#roadmap))
 
 ![CI](https://github.com/shathivvv/interntrack/actions/workflows/ci.yml/badge.svg)
 
@@ -10,6 +10,7 @@
 
 ## What works today
 
+- **Web app:** sign up, then add, edit and delete applications from the browser. The list flags follow-ups that are due or overdue, and applications with no reply after 30 days. Refreshing the page keeps you logged in.
 - **Accounts:** register, log in, log out. Passwords hashed with bcrypt; sessions stored in PostgreSQL and sent as an `httpOnly`, `Secure`, `SameSite=Lax` cookie.
 - **Applications API:** create, list, view, update (partial `PATCH`) and delete job applications.
 - **Ownership on every query:** each user only ever sees their own rows. Requests for someone else's application return `404`, the same as a missing one, so nothing leaks.
@@ -48,14 +49,15 @@ The full spec, written before any code, is in [SPEC.md](SPEC.md).
 - [x] Deployed skeleton: React + Express + PostgreSQL, CI on every pull request
 - [x] Applications CRUD API with validation and ownership tests
 - [x] Authentication with database sessions
-- [ ] React UI: login, applications list, create/edit
+- [x] React UI: login, protected routes, applications list, create/edit/delete
+- [ ] Search, filters and a detail view
 - [ ] `/analyze`: LLM job-fit scoring with schema-validated JSON output, measured with an eval set
 - [ ] "Ask your applications": retrieval over stored job descriptions (pgvector) with cited sources
 - [ ] An agent that drafts follow-ups and updates statuses, **only after I approve each change**
 
 ## Tech
 
-**Frontend:** React 19, Vite · **Backend:** Node.js 24, Express 5, Zod, bcryptjs · **Database:** PostgreSQL on Neon · **Testing / CI:** `node:test`, supertest, GitHub Actions · **Hosting:** Vercel, Render
+**Frontend:** React 19, React Router, Tailwind CSS, Vite · **Backend:** Node.js 24, Express 5, Zod, bcryptjs · **Database:** PostgreSQL on Neon · **Testing / CI:** `node:test`, supertest, GitHub Actions · **Hosting:** Vercel, Render
 
 ## Run it locally
 
