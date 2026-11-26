@@ -20,3 +20,22 @@ export const loginSchema = z.strictObject({
   email,
   password: z.string().min(1, "Required"),
 });
+
+// PATCH /api/profile. Email and password changes are left out on purpose: they need
+// re-authentication and are on the cut list. An empty name or resume clears the value.
+const clearable = (max) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((s) => s || null)
+    .nullable()
+    .optional();
+
+export const profileSchema = z
+  .strictObject({
+    name: clearable(100),
+    // Capped for the same reason as job descriptions: it's sent to the LLM in /analyze.
+    resume_text: clearable(20000),
+  })
+  .refine((body) => Object.keys(body).length > 0, { message: "Send at least one field to update" });

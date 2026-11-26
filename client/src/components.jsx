@@ -30,7 +30,10 @@ export function Layout() {
             Intern<span className="text-indigo-600">Track</span>
           </Link>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">{user.email}</span>
+            <Link to="/profile" className="text-slate-600 hover:text-indigo-600" title="Profile and resume">
+              <span className="hidden sm:inline">{user.email}</span>
+              <span className="sm:hidden">Profile</span>
+            </Link>
             <button onClick={logout} className="btn-secondary px-3 py-1.5">
               Log out
             </button>
