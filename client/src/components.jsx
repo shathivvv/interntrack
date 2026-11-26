@@ -1,4 +1,4 @@
-import { Link, Navigate, Outlet, useLocation } from 'react-router'
+import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router'
 import { useAuth } from './auth.jsx'
 import { statusInfo } from './constants.js'
 
@@ -30,10 +30,17 @@ export function Layout() {
             Intern<span className="text-indigo-600">Track</span>
           </Link>
           <div className="flex items-center gap-3 text-sm">
-            <Link to="/profile" className="text-slate-600 hover:text-indigo-600" title="Profile and resume">
-              <span className="hidden sm:inline">{user.email}</span>
-              <span className="sm:hidden">Profile</span>
-            </Link>
+            <span className="hidden text-slate-500 md:inline">{user.email}</span>
+            {/* A real button, not plain text: people only click what looks clickable.
+                NavLink highlights it while you're on the Profile page. */}
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                `btn-secondary px-3 py-1.5 ${isActive ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : ''}`
+              }
+            >
+              Profile
+            </NavLink>
             <button onClick={logout} className="btn-secondary px-3 py-1.5">
               Log out
             </button>
