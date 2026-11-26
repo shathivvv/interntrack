@@ -4,6 +4,7 @@ import { api } from '../api.js'
 import { useAuth } from '../auth.jsx'
 import { ErrorBanner, PageMessage, StatusBadge } from '../components.jsx'
 import { STATUSES, daysBetween, todayInMalaysia } from '../constants.js'
+import { FitBadge } from '../FitCard.jsx'
 
 const ACTIVE = ['saved', 'applied', 'interviewing', 'offer']
 
@@ -183,6 +184,7 @@ export default function ApplicationsList() {
                 <p className="text-sm text-slate-600">{app.role}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <StatusBadge status={app.status} />
+                  <FitBadge score={app.fit_score} />
                   {hints(app, today).map((h) => (
                     <span key={h.text} className={`rounded-full px-2 py-0.5 text-xs font-medium ${h.className}`}>{h.text}</span>
                   ))}

@@ -8,6 +8,7 @@ import {
   listQuerySchema,
   STATUSES,
 } from "../validation/applications.js";
+import { AnalyzeError } from "../ai/analyzer.js";
 
 // Each allowed ?sort= value maps to a fixed ORDER BY. The user picks a key, never SQL text.
 // "id DESC" at the end breaks ties, so the order is always the same between requests.
@@ -25,7 +26,16 @@ const escapeLike = (text) => text.replace(/[\\%_]/g, (ch) => `\\${ch}`);
 // Columns sent back to the client. user_id is left out: the client already knows who it is.
 const COLUMNS = `id, company_name, role, status, job_description, location, salary,
   date_applied, application_method, job_url, resume_version, follow_up_date,
-  interview_round, contact_name, contact_email, contact_phone, created_at, updated_at`;
+  interview_round, contact_name, contact_email, contact_phone, created_at, updated_at,
+  analysis_result, fit_score, analyzed_at, analysis_model`;
+
+// Used in PATCH: if the job description really changes, the saved analysis no longer
+// describes it, so it's cleared (SPEC). The CASE compares against the OLD value, because
+// every expression in an UPDATE's SET sees the row as it was before the update.
+const clearAnalysisIfJdChanges = (p) =>
+  ["analysis_result", "fit_score", "analyzed_at", "analysis_model"]
+    .map((col) => `${col} = CASE WHEN job_description IS DISTINCT FROM ${p} THEN NULL ELSE ${col} END`)
+    .join(", ");
 
 // Turns ":id" into a positive whole number, or null if it isn't one.
 // An invalid id is treated like a missing row (404): there's nothing at that address.
@@ -36,7 +46,8 @@ function parseId(raw) {
 const notFound = (res) => res.status(404).json({ error: "Application not found" });
 
 // `authenticate` runs before every route here and sets req.user (see middleware/auth.js).
-export function applicationsRouter({ authenticate }) {
+// `analyzer` is the function that calls the LLM (ai/analyzer.js); tests pass a fake one.
+export function applicationsRouter({ authenticate, analyzer }) {
   const router = Router();
   router.use(authenticate);
 
@@ -138,8 +149,10 @@ export function applicationsRouter({ authenticate }) {
     if (problems.length) return res.status(400).json({ error: "Validation failed", details: problems });
 
     const fields = Object.keys(parsed.data);
-    const setClause = fields.map((field, i) => `${field} = $${i + 3}`).join(", ");
-    // B4: when job_description changes, this will also clear the saved analysis (SPEC).
+    let setClause = fields.map((field, i) => `${field} = $${i + 3}`).join(", ");
+    if (fields.includes("job_description")) {
+      setClause += ", " + clearAnalysisIfJdChanges(`$${fields.indexOf("job_description") + 3}`);
+    }
     const { rows } = await pool.query(
       `UPDATE applications SET ${setClause}, updated_at = now()
        WHERE id = $1 AND user_id = $2
@@ -148,6 +161,54 @@ export function applicationsRouter({ authenticate }) {
     );
     if (rows.length === 0) return notFound(res); // deleted between the SELECT and the UPDATE
     res.json(rows[0]);
+  });
+
+  // POST /api/applications/:id/analyze: ask the LLM how well my resume fits this job,
+  // validate the answer, save it on the row and return the updated application.
+  router.post("/:id/analyze", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return notFound(res);
+    if (!analyzer) return res.status(503).json({ error: "AI analysis isn't configured on this server." });
+
+    // One query gets the job (only if it's mine) and my resume.
+    const { rows } = await pool.query(
+      `SELECT a.company_name, a.role, a.job_description, u.resume_text
+       FROM applications a JOIN users u ON u.id = a.user_id
+       WHERE a.id = $1 AND a.user_id = $2`,
+      [id, req.user.id],
+    );
+    if (rows.length === 0) return notFound(res);
+    const job = rows[0];
+    if (!job.resume_text) {
+      return res.status(400).json({ error: "Add your resume on the Profile page first." });
+    }
+
+    let analysis;
+    try {
+      analysis = await analyzer({
+        company: job.company_name,
+        role: job.role,
+        jobDescription: job.job_description,
+        resume: job.resume_text,
+      });
+    } catch (err) {
+      if (err instanceof AnalyzeError) return res.status(err.status).json({ error: err.message });
+      throw err;
+    }
+
+    // Save only if the job description hasn't changed while the model was thinking:
+    // otherwise the result would describe text that's no longer there.
+    const saved = await pool.query(
+      `UPDATE applications
+       SET analysis_result = $3, fit_score = $4, analyzed_at = now(), analysis_model = $5
+       WHERE id = $1 AND user_id = $2 AND job_description = $6
+       RETURNING ${COLUMNS}`,
+      [id, req.user.id, JSON.stringify(analysis.result), analysis.result.fit_score, analysis.model, job.job_description],
+    );
+    if (saved.rows.length === 0) {
+      return res.status(409).json({ error: "The job changed while it was being analysed. Please try again." });
+    }
+    res.json(saved.rows[0]);
   });
 
   // DELETE /api/applications/:id — delete one of mine.

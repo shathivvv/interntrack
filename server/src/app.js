@@ -5,13 +5,16 @@ import { requireAuth } from "./middleware/auth.js";
 import { applicationsRouter } from "./routes/applications.js";
 import { authRouter } from "./routes/auth.js";
 import { profileRouter } from "./routes/profile.js";
+import { createClaudeAnalyzer } from "./ai/analyzer.js";
 
 // Builds the Express app. index.js starts it; tests import it and call routes
 // with supertest without opening a real port.
 //
 // `authenticate` is injectable: production uses the real requireAuth, and tests pass
 // a fake that sets req.user directly, the same idea as FakeOCR in the FYP tests.
-export function createApp({ authenticate = requireAuth } = {}) {
+// `analyzer` works the same way: the real one calls Claude (and is null when
+// ANTHROPIC_API_KEY isn't set); tests pass a fake that returns a fixed result.
+export function createApp({ authenticate = requireAuth, analyzer = createClaudeAnalyzer() } = {}) {
   const app = express();
 
   // Parse JSON request bodies into req.body (needed for POST/PATCH).
@@ -33,7 +36,7 @@ export function createApp({ authenticate = requireAuth } = {}) {
 
   app.use("/api/auth", authRouter({ authenticate }));
   app.use("/api/profile", profileRouter({ authenticate }));
-  app.use("/api/applications", applicationsRouter({ authenticate }));
+  app.use("/api/applications", applicationsRouter({ authenticate, analyzer }));
 
   // Unknown routes get the spec's error shape instead of Express's HTML page.
   app.use((req, res) => {
