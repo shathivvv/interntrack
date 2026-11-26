@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { api, fieldErrors } from '../api.js'
 import { useAuth } from '../auth.jsx'
 import { ErrorBanner, Field, PageMessage } from '../components.jsx'
+import { extractPdfText } from '../pdfText.js'
 
 export default function Profile() {
   const { expire } = useAuth()
@@ -10,6 +11,7 @@ export default function Profile() {
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState(null)
+  const [pdfStatus, setPdfStatus] = useState(null) // { kind: 'busy' | 'ok' | 'error', text }
 
   useEffect(() => {
     api('/profile')
@@ -20,6 +22,25 @@ export default function Profile() {
   const update = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
     setSavedAt(null)
+  }
+
+  // Fills the resume box from a PDF. Nothing is saved until you press "Save profile",
+  // so you can check (and fix) the extracted text first.
+  async function importPdf(event) {
+    const file = event.target.files?.[0]
+    event.target.value = '' // lets you pick the same file again later
+    if (!file) return
+    if (form.resume_text.trim() && !window.confirm('Replace the resume text below with the text from this PDF?')) return
+
+    setPdfStatus({ kind: 'busy', text: `Reading ${file.name}…` })
+    try {
+      const text = await extractPdfText(file)
+      setForm((f) => ({ ...f, resume_text: text.slice(0, 20000) }))
+      setSavedAt(null)
+      setPdfStatus({ kind: 'ok', text: `Imported ${text.length.toLocaleString()} characters from ${file.name}. Check it, then save.` })
+    } catch (err) {
+      setPdfStatus({ kind: 'error', text: err.message || "Couldn't read that PDF." })
+    }
   }
 
   async function handleSubmit(event) {
@@ -54,6 +75,21 @@ export default function Profile() {
         <Field label="Name" error={errors.name}>
           <input className="input" name="name" value={form.name} onChange={update} autoComplete="name" />
         </Field>
+
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3">
+          <label className="btn-secondary cursor-pointer">
+            Import from PDF
+            <input type="file" accept="application/pdf,.pdf" className="sr-only" onChange={importPdf} />
+          </label>
+          <span
+            className={`text-sm ${
+              pdfStatus?.kind === 'error' ? 'text-red-600' : pdfStatus?.kind === 'ok' ? 'text-green-700' : 'text-slate-500'
+            }`}
+            aria-live="polite"
+          >
+            {pdfStatus?.text ?? 'Read in your browser; the file itself is never uploaded.'}
+          </span>
+        </div>
 
         <Field label="Resume" error={errors.resume_text}>
           <textarea
