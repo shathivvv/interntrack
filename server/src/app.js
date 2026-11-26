@@ -4,6 +4,7 @@ import pool from "./db.js";
 import { requireAuth } from "./middleware/auth.js";
 import { applicationsRouter } from "./routes/applications.js";
 import { authRouter } from "./routes/auth.js";
+import { profileRouter } from "./routes/profile.js";
 
 // Builds the Express app. index.js starts it; tests import it and call routes
 // with supertest without opening a real port.
@@ -31,6 +32,7 @@ export function createApp({ authenticate = requireAuth } = {}) {
   });
 
   app.use("/api/auth", authRouter({ authenticate }));
+  app.use("/api/profile", profileRouter({ authenticate }));
   app.use("/api/applications", applicationsRouter({ authenticate }));
 
   // Unknown routes get the spec's error shape instead of Express's HTML page.
