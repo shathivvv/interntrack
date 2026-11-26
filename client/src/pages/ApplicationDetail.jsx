@@ -5,6 +5,7 @@ import { useAuth } from '../auth.jsx'
 import { ErrorBanner, PageMessage, StatusBadge } from '../components.jsx'
 import { INTERVIEW_ROUNDS, METHODS } from '../constants.js'
 import { hints } from './ApplicationsList.jsx'
+import { FitCard } from '../FitCard.jsx'
 
 const labelOf = (list, value) => list.find((o) => o.value === value)?.label ?? value
 
@@ -84,6 +85,8 @@ export default function ApplicationDetail() {
       </div>
 
       <ErrorBanner>{error?.message}</ErrorBanner>
+
+      <FitCard app={app} onUpdated={setApp} onUnauthorized={expire} />
 
       {facts.length > 0 && (
         <dl className="mb-5 grid gap-x-6 gap-y-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2">
