@@ -40,8 +40,10 @@ export async function extractPdfText(file) {
   ])
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl // parsing runs in a background worker
 
-  const pdf = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise
+  // In pdf.js v6, destroy() lives on the loading task, not on the document.
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) })
   try {
+    const pdf = await loadingTask.promise
     if (pdf.numPages > MAX_PAGES) throw new Error(`That PDF has ${pdf.numPages} pages; a resume should be at most ${MAX_PAGES}.`)
     const pages = []
     for (let n = 1; n <= pdf.numPages; n++) {
@@ -54,6 +56,7 @@ export async function extractPdfText(file) {
     if (text.length < 50) throw new Error("Couldn't find text in that PDF. If it's a scan, paste the text instead.")
     return text
   } finally {
-    pdf.destroy() // free the worker's memory
+    // Free the worker's memory. A failure here must never hide the real result or error.
+    loadingTask.destroy().catch(() => {})
   }
 }
