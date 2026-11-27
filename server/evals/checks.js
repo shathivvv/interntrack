@@ -1,30 +1,16 @@
 // The rules an /analyze result is judged by. Pure functions (no network, no DB),
 // so they're unit-tested like any other code in test/eval-checks.test.js.
+// Text matching is shared with the production guardrails (src/ai/grounding.js), so the
+// eval and the app agree on what "grounded" and "soft skill" mean.
+import { norm, isGrounded, isSoftSkill, MAX_SOFT_SKILLS } from "../src/ai/grounding.js";
 
-// Words that describe soft skills. More than a few in "matched" means the model is
-// padding the list with resume buzzwords instead of real technical matches.
-const SOFT_SKILL_WORDS = [
-  "communication", "teamwork", "team work", "collaboration", "leadership", "problem-solving",
-  "problem solving", "analytical", "adaptab", "self-motivated", "proactive", "willing to learn",
-  "curiosity", "ownership", "attention to detail", "detail-oriented", "time management",
-  "interpersonal", "planning", "positive", "independent", "initiative",
-];
-export const MAX_SOFT_SKILLS = 3;
+export { isGrounded, isSoftSkill, MAX_SOFT_SKILLS };
 
-const norm = (s) => s.toLowerCase().replace(/[^a-z0-9+#.]+/g, " ").trim();
-const containsSkill = (list, wanted) => list.some((s) => norm(s).includes(norm(wanted)) || norm(wanted).includes(norm(s)));
-
-export const isSoftSkill = (skill) => SOFT_SKILL_WORDS.some((w) => skill.toLowerCase().includes(w));
-
-// A skill counts as grounded if at least half of its meaningful words appear in the job text.
-// Loose on purpose: "REST API development" is grounded by a JD that says "REST APIs".
-export function isGrounded(skill, jobDescription) {
-  const jd = ` ${norm(jobDescription)} `;
-  const words = norm(skill).split(" ").filter((w) => w.length > 2 || /[+#]/.test(w));
-  if (words.length === 0) return true;
-  const found = words.filter((w) => jd.includes(w.replace(/s$/, "")));
-  return found.length / words.length >= 0.5;
-}
+// Whole-word match, so "Java" does NOT match "JavaScript" (a bug in the first version).
+// An expected skill may list synonyms with "|", e.g. "RAG|Retrieval-Augmented Generation".
+const hasPhrase = (text, phrase) => ` ${norm(text)} `.includes(` ${norm(phrase)} `);
+export const containsSkill = (list, wanted) =>
+  wanted.split("|").some((alias) => list.some((s) => hasPhrase(s, alias) || hasPhrase(alias, s)));
 
 // Runs every check for one case. Returns [{ name, pass, detail }].
 export function checkCase(expect, result, jobDescription) {
@@ -45,6 +31,8 @@ export function checkCase(expect, result, jobDescription) {
   add("skills come from the JD", ungrounded.length === 0, ungrounded.length ? `not in JD: ${ungrounded.join(", ")}` : "");
   const soft = matched.filter(isSoftSkill);
   add(`≤ ${MAX_SOFT_SKILLS} soft skills in matched`, soft.length <= MAX_SOFT_SKILLS, soft.length ? `${soft.length}: ${soft.join(", ")}` : "");
+  const both = matched.filter((m) => missing.some((x) => norm(x) === norm(m)));
+  add("no skill in both lists", both.length === 0, both.join(", "));
 
   return out;
 }

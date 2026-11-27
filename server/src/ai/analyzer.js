@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { applyGuardrails } from "./grounding.js";
 
 export const ANALYSIS_MODEL = "claude-haiku-5-5";
 
@@ -8,8 +9,8 @@ export const ANALYSIS_MODEL = "claude-haiku-5-5";
 // Note: the API can't enforce numeric ranges or list lengths, so those are only hints here...
 const ModelOutput = z.object({
   fit_score: z.number().int().describe("0-100: how well the resume fits this job"),
-  matched_skills: z.array(z.string()).describe("Skills the job asks for that the resume shows"),
-  missing_skills: z.array(z.string()).describe("Skills the job asks for that the resume does not show"),
+  matched_skills: z.array(z.string()).describe("Short skill names (1-4 words) the job asks for that the resume shows"),
+  missing_skills: z.array(z.string()).describe("Short skill names (1-4 words) the job asks for that the resume does not show"),
   summary: z.string().describe("1-2 sentences explaining the score"),
 });
 
@@ -43,10 +44,20 @@ export class AnalyzeError extends Error {
 
 const SYSTEM_PROMPT = `You compare a candidate's resume with a job description and judge how well they fit.
 
-Rules:
-- matched_skills: skills, tools or requirements the JOB asks for that the RESUME clearly shows. Use the job's wording.
-- missing_skills: skills, tools or requirements the JOB asks for that the resume does not show.
-- Only list items that appear in the job description. Never invent requirements.
+How to build the two skill lists:
+1. First list the concrete skills the JOB asks for: technologies, languages, frameworks, tools and
+   specific abilities. Split combined lines into separate items: "HTML, CSS and JavaScript" is three items.
+   Each item is a short name of 1 to 4 words, like "React", "REST APIs", "Unit testing". Never copy a whole sentence.
+2. Put each of those items in exactly one list:
+   - matched_skills: the resume shows real evidence of it (a project, job, course or listed skill).
+   - missing_skills: the resume shows no evidence of it.
+3. When the job says "one of X, Y or Z", count it as matched if the resume has any one of them,
+   and name the one the resume has. Do not list the others as matched.
+4. Never add skills the job does not ask for, even if the resume has them.
+5. Willingness or interest ("willing to learn X") is not evidence of X.
+6. At most 3 soft skills (e.g. communication, teamwork) in matched_skills, and only if the job asks for them.
+
+Other rules:
 - fit_score (0-100): 80-100 strong fit, 60-79 good fit with some gaps, 40-59 partial fit, below 40 weak fit.
   Weigh hard requirements more than nice-to-haves.
 - summary: one or two plain sentences explaining the score. Mention the biggest strength and the biggest gap.
@@ -98,9 +109,13 @@ export function createClaudeAnalyzer({ apiKey = process.env.ANTHROPIC_API_KEY, c
       throw new AnalyzeError("The AI returned an invalid result. Please try again.");
     }
     return {
-      result: checked.data,
+      // The prompt asks for grounded skills; applyGuardrails makes sure of it.
+      result: applyGuardrails(checked.data, { jobDescription, resume }),
       model: response.model ?? ANALYSIS_MODEL,
-      // For the eval script: what this call cost and how long it took.
+      // For the eval script: the model's answer before the guardrails, so failures can be traced
+      // to the model or to the guardrails (not saved by the API route).
+      raw: checked.data,
+      // What this call cost and how long it took.
       usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens },
       latencyMs: Date.now() - started,
     };

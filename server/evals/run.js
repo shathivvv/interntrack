@@ -31,7 +31,7 @@ for (const c of cases) {
     try {
       const out = await analyze({ company: c.company, role: c.role, jobDescription: c.job_description, resume });
       const checks = checkCase(c.expect, out.result, c.job_description);
-      rows.push({ id: label, pass: checks.every((k) => k.pass), score: out.result.fit_score, checks, result: out.result,
+      rows.push({ id: label, pass: checks.every((k) => k.pass), score: out.result.fit_score, checks, result: out.result, raw: out.raw,
         tokens: out.usage, latencyMs: out.latencyMs, cost: costUsd(out.usage) });
     } catch (err) {
       rows.push({ id: label, pass: false, error: err.message, checks: [{ name: "call succeeded", pass: false, detail: err.message }] });

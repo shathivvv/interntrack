@@ -13,6 +13,18 @@ test("grounding: skills must come from the job description", () => {
   assert.equal(isGrounded("Kubernetes", JD), false); // invented requirement
 });
 
+test("checker bugs found in the first real run stay fixed", () => {
+  // "Java" must not match "JavaScript".
+  assert.equal(byName(checkCase({ never_match: ["Java"] }, result({ matched_skills: ["JavaScript"] }), "JavaScript"))['does not claim "Java"'], true);
+  assert.equal(byName(checkCase({ never_match: ["Java"] }, result({ matched_skills: ["Java"] }), "Java"))['does not claim "Java"'], false);
+  // Synonyms with "|".
+  const rag = checkCase({ must_miss: ["RAG|Retrieval-Augmented Generation"] }, result({ missing_skills: ["Retrieval-Augmented Generation"] }), "Retrieval-Augmented Generation");
+  assert.equal(rag[0].pass, true);
+  // Stems: "Testing" is grounded by "test", ".NET Core" by ".NET".
+  assert.equal(isGrounded("Testing", "Debug, test and deploy"), true);
+  assert.equal(isGrounded(".NET Core", "SQL or NoSQL, .NET Core"), true);
+});
+
 test("soft-skill detector", () => {
   assert.equal(isSoftSkill("Communication & Collaboration"), true);
   assert.equal(isSoftSkill("Problem-solving"), true);
