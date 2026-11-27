@@ -97,7 +97,13 @@ export function createClaudeAnalyzer({ apiKey = process.env.ANTHROPIC_API_KEY, c
       console.error("analyze: model output failed validation:", JSON.stringify(checked.error.issues).slice(0, 500));
       throw new AnalyzeError("The AI returned an invalid result. Please try again.");
     }
-    return { result: checked.data, model: response.model ?? ANALYSIS_MODEL };
+    return {
+      result: checked.data,
+      model: response.model ?? ANALYSIS_MODEL,
+      // For the eval script: what this call cost and how long it took.
+      usage: { input_tokens: response.usage.input_tokens, output_tokens: response.usage.output_tokens },
+      latencyMs: Date.now() - started,
+    };
   };
 }
 
