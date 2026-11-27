@@ -114,7 +114,8 @@ test("the real analyzer handles a refusal and an invalid response without saving
   // A stand-in for the Anthropic client, so no request leaves the machine.
   const clientReturning = (response) => ({ messages: { parse: async () => response } });
   const usage = { input_tokens: 10, output_tokens: 5 };
-  const input = { company: "X", role: "Y", jobDescription: "JD", resume: "CV" };
+  // Realistic text, because the guardrails drop any skill that isn't in the JD and the resume.
+  const input = { company: "X", role: "Y", jobDescription: "Need React, SQL and Docker.", resume: "Projects using React and SQL." };
 
   const refusing = createClaudeAnalyzer({ client: clientReturning({ stop_reason: "refusal", usage, parsed_output: null }) });
   await assert.rejects(refusing(input), AnalyzeError);
@@ -124,6 +125,15 @@ test("the real analyzer handles a refusal and an invalid response without saving
 
   const ok = createClaudeAnalyzer({ client: clientReturning({ stop_reason: "end_turn", usage, parsed_output: RESULT, model: "m" }) });
   assert.deepEqual((await ok(input)).result, RESULT);
+
+  // The guardrails run on every real answer: a claimed skill the resume lacks moves to missing,
+  // and a skill the JD never mentions is dropped.
+  const padded = { ...RESULT, matched_skills: ["React", "SQL", "Docker", "Kubernetes"], missing_skills: [] };
+  const guarded = createClaudeAnalyzer({ client: clientReturning({ stop_reason: "end_turn", usage, parsed_output: padded, model: "m" }) });
+  const out = await guarded(input);
+  assert.deepEqual(out.result.matched_skills, ["React", "SQL"]);
+  assert.deepEqual(out.result.missing_skills, ["Docker"]);
+  assert.deepEqual(out.raw.matched_skills, padded.matched_skills); // raw answer kept for evals
 
   assert.equal(createClaudeAnalyzer({ apiKey: "" }), null); // no key → not configured
 });

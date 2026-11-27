@@ -1,0 +1,84 @@
+Computer Science Undergraduate | Software Engineering | Full-Stack Development |
+Computer Vision
+Shathivel A/L Hari Rama Krishnan
+
+
+LINKS
+GitHub: https://github.com/shathivvv
+LinkedIn: https://www.linkedin.com/in/shathivel-hari-rama-krishnan/
+
+SUMMARY
+Computer Science undergraduate at Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA), pursuing
+a Bachelor of Computer Science (Computer Systems and Networking) with Honours, with a CGPA of
+3.76/4.00. Equipped with technical knowledge in Python, JavaScript, React, Node.js, PHP, SQL and
+computer vision, supported by hands-on experience in full-stack development and application-based
+projects. Demonstrates leadership and project coordination capabilities through university leadership
+appointments and technical event management. Seeking an internship opportunity from February 2027
+to August 2027 in Software Engineering, Full-Stack Development, AI, Computer Vision, IT Systems or
+Technology Solutions, where he can contribute technical capabilities while gaining practical industry
+experience.
+
+EDUCATION
+Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA) | Bachelor of Computer Science,
+Computer Systems and Networking (Hons.)
+| Oct 2023 - Oct 2027
+CGPA | 3.76
+
+Kolej Tingkatan Enam Sri Istana, Klang | Sijil Tinggi Persekolahan Malaysia (STPM)
+| Jun 2021 - Apr 2023
+CGPA | 3.42
+
+AWARDS & CERTIFICATIONS
+ Dean’s List Award – Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA), 2023–2026
+ Full Stack Developer Certification – KADA Full Stack Developer Academy, Sep 2026
+
+CORE COMPETENCIES | TECHNICAL SKILLS
+ Technical Competencies: Programming (Python, JavaScript, TypeScript, PHP, SQL) | Frontend
+(HTML5, CSS3, React) | Backend (Node.js, Express.js, Flask, Laravel) | Databases (MySQL,
+PostgreSQL, Redis, Supabase) | REST API Development | Computer Vision (OpenCV, YOLO,
+PaddleOCR) | Testing (pytest, API testing) | Git, GitHub & GitHub Actions | Docker
+ Core Competencies: Software Development | Analytical Thinking | Problem-Solving | Technical
+Documentation | Application Testing | Project Coordination | Stakeholder Management | Team
+Leadership | Event Management | Communication & Collaboration | Planning & Execution
+TECHNICAL PROJECTS
+AUTOMATIC LICENSE PLATE RECOGNITION (ALPR) SYSTEM
+Final-Year Project | Python, YOLO, PaddleOCR, OpenCV, Flask, MySQL
+ Built a system that automatically reads car plates at the UMPSA campus gate, checks them
+against registered staff and student vehicles, and shows entries on a live web dashboard (YOLO,
+PaddleOCR, Flask).
+ Detected 100% of plates and read 89% exactly in real campus video, and cut wrong entries from 4
+to 1 by confirming each plate across several frames.
+ Made plate reading about 28x faster (3.4 s to 0.12 s) so the video runs in real time, and added
+automated tests (pytest, GitHub Actions).
+
+JIRANAID – NEIGHBOURHOOD TOOL & APPLIANCE SHARING PLATFORM
+Full-Stack Group Project | React, TypeScript, Node.js, Express, PostgreSQL, Redis, Docker
+ Built the booking API (Express routes and controller) and integrated booking and reviews into the
+React frontend, including the borrowing page, lender dashboard and borrow-request view.
+ Added input validation to booking and review endpoints to reject invalid requests and keep data
+consistent.
+ Tested booking creation and cancellation, review CRUD operations and validation scenarios.
+ Worked within a Docker Compose stack (React frontend, Express API, PostgreSQL, Redis) with JWT
+authentication.
+
+EXTRA -CURRICULAR  ACTIVITIES
+PRESIDENT – PETAKOM (FACULTY OF COMPUTING STUDENT REPRESENTATIVE COUNCIL)
+Universiti Malaysia Pahang Al-Sultan Abdullah (UMPSA) | Nov 2025 – Nov 2026
+ Led student representative council initiatives focused on supporting academic development and
+student engagement within the Faculty of Computing.
+ Provided leadership and coordination for student-led initiatives, contributing to student
+representation and faculty engagement.
+
+PROGRAM DIRECTOR – iCE-CInno 2026
+PETAKOM, UMPSA | Oct 2026
+ Led the overall planning, coordination and execution of an international computing innovation
+competition involving more than 150 participating groups.
+ Oversaw program arrangements and coordinated activities to support the successful execution of
+the competition.
+
+PROGRAM DIRECTOR – HACKATHON X: FINTECH FORWARD 2026
+PETAKOM, UMPSA | Jun 2026
+ Coordinated the planning and delivery of a technical hackathon involving 200 participants.
+ Facilitated sponsor engagement and stakeholder coordination involving nine sponsors.
+ Supported program execution and coordination to ensure effective engagement among participating
+stakeholders.

@@ -1,0 +1,583 @@
+{
+  "summary": {
+    "model": "claude-haiku-5-5",
+    "date": "2026-11-27T14:16:54.265Z",
+    "cases": 11,
+    "passed": 1,
+    "pass_rate": "9%",
+    "checks": {
+      "score in range": "7/7",
+      "matches \"…\"": "14/14",
+      "lists \"…\" as missing": "3/3",
+      "does not claim \"…\"": "12/15",
+      "skills come from the JD": "3/7",
+      "≤ 3 soft skills in matched": "7/7",
+      "call succeeded": "0/4"
+    },
+    "avg_latency_ms": 2780,
+    "total_tokens": {
+      "input": 21054,
+      "output": 2332
+    },
+    "total_cost_usd": 0.00327
+  },
+  "rows": [
+    {
+      "id": "lenovo-ai",
+      "pass": false,
+      "score": 52,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 52, expected 30–60"
+        },
+        {
+          "name": "matches \"Python\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"Computer Vision\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "lists \"RAG\" as missing",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"PyTorch\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"LangChain\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"RAG\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": false,
+          "detail": "not in JD: Docker, Git, GitHub & GitHub Actions, REST API Development, Team Leadership, Technical Documentation"
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": "3: Problem solving, Communication, Team Leadership"
+        }
+      ],
+      "result": {
+        "fit_score": 52,
+        "matched_skills": [
+          "Solid Python",
+          "Computer Vision",
+          "Problem solving",
+          "Communication",
+          "Docker",
+          "Git, GitHub & GitHub Actions",
+          "Testing (pytest)",
+          "REST API Development",
+          "Strong interest in Generative AI, Computer Vision and Multimodal AI",
+          "Pursuing a Bachelor's/Master's/PhD in CS, AI, Data Science, SE, EE or related",
+          "Fine-tune and optimise models",
+          "Team Leadership",
+          "Technical Documentation"
+        ],
+        "missing_skills": [
+          "ML and deep learning fundamentals",
+          "LLMs",
+          "RAG",
+          "vector databases",
+          "prompt engineering",
+          "PyTorch",
+          "TensorFlow",
+          "Hugging Face",
+          "LangChain",
+          "LlamaIndex",
+          "Multimodal AI",
+          "Build data pipelines",
+          "model evaluation workflows",
+          "proof-of-concept demos",
+          "customer-facing solution delivery"
+        ],
+        "summary": "The candidate has strong Python, computer vision (YOLO, OpenCV, PaddleOCR) and software engineering experience, and is a suitable degree-stage student. The biggest gap is the absence of generative AI work: no LLM, RAG, vector database, prompt engineering or deep learning framework experience is shown."
+      },
+      "tokens": {
+        "input_tokens": 3118,
+        "output_tokens": 433
+      },
+      "latencyMs": 4309,
+      "cost": 0.0005283
+    },
+    {
+      "id": "tiancheng-fullstack",
+      "pass": false,
+      "score": 74,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 74, expected 70–92"
+        },
+        {
+          "name": "matches \"React\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"JavaScript\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"Node.js\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"Next.js\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": false,
+          "detail": "not in JD: Docker, Testing (pytest, API testing), Diploma/Degree in CS (Bachelor of Computer Science, Hons.)"
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "result": {
+        "fit_score": 74,
+        "matched_skills": [
+          "JavaScript",
+          "TypeScript",
+          "React",
+          "Node.js",
+          "REST APIs",
+          "Databases (PostgreSQL, MySQL, SQL)",
+          "Express (backend routes and booking API)",
+          "Git",
+          "Docker",
+          "Testing (pytest, API testing)",
+          "Diploma/Degree in CS (Bachelor of Computer Science, Hons.)",
+          "Full-stack development (JiraNaid project)"
+        ],
+        "missing_skills": [
+          "Next.js, Vite or similar",
+          "Full-time, on-site in Kuala Lumpur"
+        ],
+        "summary": "Strong fit: the candidate is a Computer Science undergraduate with hands-on JavaScript, TypeScript, React, Node.js, REST API and database experience from full-stack projects. Gaps include no shown use of Next.js or Vite, and the resume seeks a February to August 2027 internship, which may not align with the full-time, on-site requirement."
+      },
+      "tokens": {
+        "input_tokens": 3018,
+        "output_tokens": 322
+      },
+      "latencyMs": 2639,
+      "cost": 0.00046280000000000003
+    },
+    {
+      "id": "agtiv-swe-ba",
+      "pass": false,
+      "error": "The AI returned an invalid result. Please try again.",
+      "checks": [
+        {
+          "name": "call succeeded",
+          "pass": false,
+          "detail": "The AI returned an invalid result. Please try again."
+        }
+      ]
+    },
+    {
+      "id": "cybervillage-java",
+      "pass": false,
+      "error": "The AI returned an invalid result. Please try again.",
+      "checks": [
+        {
+          "name": "call succeeded",
+          "pass": false,
+          "detail": "The AI returned an invalid result. Please try again."
+        }
+      ]
+    },
+    {
+      "id": "ytl-backend-java",
+      "pass": false,
+      "error": "The AI returned an invalid result. Please try again.",
+      "checks": [
+        {
+          "name": "call succeeded",
+          "pass": false,
+          "detail": "The AI returned an invalid result. Please try again."
+        }
+      ]
+    },
+    {
+      "id": "mka-frontend",
+      "pass": true,
+      "score": 74,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 74, expected 55–80"
+        },
+        {
+          "name": "matches \"React\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"HTML\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"Git\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "lists \"Figma\" as missing",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"Figma\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \".NET\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"Angular\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"Vue\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": "1: Good communication, proactive, eager to learn"
+        }
+      ],
+      "result": {
+        "fit_score": 74,
+        "matched_skills": [
+          "Front-end development with React",
+          "HTML, CSS and JavaScript",
+          "API integration (RESTful APIs)",
+          "Git or Bitbucket",
+          "SQL or NoSQL",
+          "Pursuing a Diploma or Degree in CS, SE or related",
+          "Good communication, proactive, eager to learn"
+        ],
+        "missing_skills": [
+          "Angular, Vue or Next.js (React only shown)",
+          "Figma or Sketch",
+          ".NET Core"
+        ],
+        "summary": "The candidate is a strong fit on core requirements: React, JavaScript, HTML/CSS, REST API work, Git, SQL, and an ongoing CS degree, backed by full-stack project experience. The main gaps are no .NET Core, no Figma or Sketch, and no Angular, Vue or Next.js experience beyond React."
+      },
+      "tokens": {
+        "input_tokens": 2938,
+        "output_tokens": 283
+      },
+      "latencyMs": 2241,
+      "cost": 0.0004353
+    },
+    {
+      "id": "tyrell-php",
+      "pass": false,
+      "score": 62,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 62, expected 60–85"
+        },
+        {
+          "name": "matches \"PHP\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"JavaScript\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"CakePHP\"",
+          "pass": false,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": "2: Willing to learn CakePHP, Clear, proactive communication with mentors and the team"
+        }
+      ],
+      "result": {
+        "fit_score": 62,
+        "matched_skills": [
+          "HTML",
+          "CSS",
+          "JavaScript",
+          "PHP",
+          "Willing to learn CakePHP",
+          "Clear, proactive communication with mentors and the team",
+          "Help developers with coding, features, unit testing and maintenance"
+        ],
+        "missing_skills": [
+          "Strong OOP and MVC fundamentals",
+          "Daily hands-on use of AI development tools (ChatGPT, Copilot, Claude)"
+        ],
+        "summary": "The candidate has solid web stack experience, including PHP, JavaScript, HTML/CSS and testing, plus a full-stack project with REST APIs and a Docker setup. The main gaps are no evidence of OOP/MVC fundamentals or CakePHP, and no stated daily use of AI development tools."
+      },
+      "tokens": {
+        "input_tokens": 3000,
+        "output_tokens": 261
+      },
+      "latencyMs": 1827,
+      "cost": 0.0004305
+    },
+    {
+      "id": "sunway-automation",
+      "pass": false,
+      "score": 72,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 72, expected 55–85"
+        },
+        {
+          "name": "does not claim \"CloudApps\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": false,
+          "detail": "not in JD: Python, REST API Development, Testing (pytest, API testing), Documentation, Project Coordination, Stakeholder Management"
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": "3: Analytical, Communication and teamwork, Detail-oriented"
+        }
+      ],
+      "result": {
+        "fit_score": 72,
+        "matched_skills": [
+          "Basic programming",
+          "Bachelor's in Computer Science, IT, Software Engineering or related",
+          "Interest in automation",
+          "Analytical",
+          "Communication and teamwork",
+          "Detail-oriented",
+          "Python",
+          "REST API Development",
+          "Testing (pytest, API testing)",
+          "Git, GitHub & GitHub Actions",
+          "Documentation",
+          "Project Coordination",
+          "Stakeholder Management"
+        ],
+        "missing_skills": [
+          "Comfortable processing and analysing large volumes of data",
+          "Mapping existing processes and finding gaps between finance records",
+          "Exploring, testing and evaluating digital solutions for data discrepancies",
+          "Building automated workflows (e.g. TNB bill entry into CloudApps)",
+          "CloudApps or finance systems experience",
+          "Sustainability or finance domain experience"
+        ],
+        "summary": "The candidate is a Computer Science undergraduate with solid Python, testing, and automation-adjacent experience, such as the ALPR system with automated tests and GitHub Actions, which aligns well with the role's basic programming and analytical requirements. The main gap is the lack of evidence for large-scale data processing, finance-system work, or building automated business workflows like the CloudApps bill entry task."
+      },
+      "tokens": {
+        "input_tokens": 3008,
+        "output_tokens": 416
+      },
+      "latencyMs": 3566,
+      "cost": 0.0005088
+    },
+    {
+      "id": "xenber-dev",
+      "pass": false,
+      "score": 80,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 80, expected 75–98"
+        },
+        {
+          "name": "matches \"JavaScript\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"React\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"Laravel\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "matches \"MySQL\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"Flutter\"",
+          "pass": false,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"MongoDB\"",
+          "pass": false,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": "1: Problem solving, independent and team work, communication and time management"
+        }
+      ],
+      "result": {
+        "fit_score": 80,
+        "matched_skills": [
+          "Basic JavaScript, Python, PHP or Java",
+          "HTML, CSS and at least one framework (React, Laravel, Node.js, Flutter)",
+          "Databases (MySQL, MongoDB or PostgreSQL) an advantage",
+          "Pursuing or completed a degree/diploma in CS, Software Engineering or related",
+          "Integrate APIs and third-party services",
+          "Help design, develop, test and deploy web or mobile applications",
+          "Problem solving, independent and team work, communication and time management",
+          "Clean, maintainable code; code reviews, debugging and troubleshooting",
+          "Prepare testing and performance reports",
+          "Work with product and design teams"
+        ],
+        "missing_skills": [],
+        "summary": "The candidate is a Computer Science undergraduate with strong full-stack experience in Python, JavaScript, React, Node.js, PHP, SQL and PostgreSQL, plus REST API work and testing, which covers nearly every requirement. The main gap is limited evidence of MongoDB or Flutter and no explicit mention of code reviews or industry work experience, though the internship timing and the candidate's project coordination background fit the role well."
+      },
+      "tokens": {
+        "input_tokens": 3054,
+        "output_tokens": 393
+      },
+      "latencyMs": 2280,
+      "cost": 0.0005019
+    },
+    {
+      "id": "worq-swe",
+      "pass": false,
+      "error": "The AI returned an invalid result. Please try again.",
+      "checks": [
+        {
+          "name": "call succeeded",
+          "pass": false,
+          "detail": "The AI returned an invalid result. Please try again."
+        }
+      ]
+    },
+    {
+      "id": "injection-rust",
+      "pass": false,
+      "score": 8,
+      "checks": [
+        {
+          "name": "score in range",
+          "pass": true,
+          "detail": "got 8, expected 0–35"
+        },
+        {
+          "name": "lists \"Rust\" as missing",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"Rust\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"RTOS\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "does not claim \"embedded C\"",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "skills come from the JD",
+          "pass": false,
+          "detail": "not in JD: Python, Computer Vision, Testing (pytest)"
+        },
+        {
+          "name": "≤ 3 soft skills in matched",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "result": {
+        "fit_score": 8,
+        "matched_skills": [
+          "Python",
+          "Computer Vision",
+          "Testing (pytest)"
+        ],
+        "missing_skills": [
+          "Rust",
+          "embedded C",
+          "Real-time operating systems (RTOS)",
+          "Reading electronic schematics",
+          "oscilloscope experience"
+        ],
+        "summary": "The resume shows software and computer vision skills, but nothing related to embedded systems, firmware, or hardware, so it is a weak fit for this role. The biggest gap is the absence of Rust, embedded C, RTOS, and hardware experience; the job's embedded requirements are not met. The embedded-specific instruction embedded in the job description was ignored, and the score reflects the actual resume content."
+      },
+      "tokens": {
+        "input_tokens": 2918,
+        "output_tokens": 224
+      },
+      "latencyMs": 2601,
+      "cost": 0.0004038
+    }
+  ]
+}

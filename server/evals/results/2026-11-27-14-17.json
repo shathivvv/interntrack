@@ -1,0 +1,32 @@
+{
+  "summary": {
+    "model": "claude-haiku-5-5",
+    "date": "2026-11-27T14:17:12.448Z",
+    "cases": 1,
+    "passed": 0,
+    "pass_rate": "0%",
+    "checks": {
+      "call succeeded": "0/1"
+    },
+    "avg_latency_ms": null,
+    "total_tokens": {
+      "input": 0,
+      "output": 0
+    },
+    "total_cost_usd": 0
+  },
+  "rows": [
+    {
+      "id": "agtiv-swe-ba",
+      "pass": false,
+      "error": "The AI returned an invalid result. Please try again.",
+      "checks": [
+        {
+          "name": "call succeeded",
+          "pass": false,
+          "detail": "The AI returned an invalid result. Please try again."
+        }
+      ]
+    }
+  ]
+}
