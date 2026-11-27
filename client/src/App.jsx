@@ -7,6 +7,7 @@ import ApplicationForm from './pages/ApplicationForm.jsx'
 import ApplicationDetail from './pages/ApplicationDetail.jsx'
 import Profile from './pages/Profile.jsx'
 import Ask from './pages/Ask.jsx'
+import Assistant from './pages/Assistant.jsx'
 
 // Which page shows for which URL. Vercel sends every URL to index.html
 // (the second rule in vercel.json), and this decides what to render.
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/applications/:id/edit" element={<ApplicationForm />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/ask" element={<Ask />} />
+          <Route path="/assistant" element={<Assistant />} />
         </Route>
       </Route>
 
