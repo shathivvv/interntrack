@@ -12,7 +12,7 @@ export function fakeAuth(req, res, next) {
 // Empty every table and restart the id counters, so each test starts from a known state.
 // This is why tests run against the `test` Neon branch / CI's throwaway database, never dev.
 export async function resetDb() {
-  await pool.query("TRUNCATE users, applications, sessions RESTART IDENTITY CASCADE");
+  await pool.query("TRUNCATE users, applications, sessions, agent_runs RESTART IDENTITY CASCADE");
 }
 
 export async function createUser(email) {

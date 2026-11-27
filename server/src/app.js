@@ -9,6 +9,8 @@ import { createClaudeAnalyzer } from "./ai/analyzer.js";
 import { createVoyageEmbedder } from "./ai/embedder.js";
 import { createClaudeAnswerer } from "./ai/answerer.js";
 import { askRouter } from "./routes/ask.js";
+import { createClaudeAgentModel } from "./ai/agent/loop.js";
+import { agentRouter } from "./routes/agent.js";
 
 // Builds the Express app. index.js starts it; tests import it and call routes
 // with supertest without opening a real port.
@@ -23,6 +25,7 @@ export function createApp({
   analyzer = createClaudeAnalyzer(),
   embedder = createVoyageEmbedder(),
   answerer = createClaudeAnswerer(), // "Ask your applications" (RAG), same pattern again
+  agentModel = createClaudeAgentModel(), // the assistant agent; tests pass a scripted fake
 } = {}) {
   const app = express();
 
@@ -47,6 +50,7 @@ export function createApp({
   app.use("/api/profile", profileRouter({ authenticate }));
   app.use("/api/applications", applicationsRouter({ authenticate, analyzer, embedder }));
   app.use("/api/ask", askRouter({ authenticate, answerer, embedder }));
+  app.use("/api/agent", agentRouter({ authenticate, agentModel }));
 
   // Unknown routes get the spec's error shape instead of Express's HTML page.
   app.use((req, res) => {

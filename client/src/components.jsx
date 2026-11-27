@@ -35,6 +35,7 @@ export function Layout() {
                 NavLink highlights the one for the page you're on. */}
             {[
               ['/ask', 'Ask'],
+              ['/assistant', 'Assistant'],
               ['/profile', 'Profile'],
             ].map(([to, label]) => (
               <NavLink
