@@ -1,72 +1,95 @@
 # InternTrack
 
-**A job application tracker I'm building to run my own internship search.** It keeps every application and follow-up in one place, and it's growing an AI layer that scores how well a role fits my resume.
+**A job application tracker I built to run my own internship search, with an AI layer that is measured, not just demoed.** It scores how well each job fits my resume, answers questions about my applications with cited sources, and runs an assistant agent that can't change anything without my approval.
 
-**Live:** [interntrack-psi.vercel.app](https://interntrack-psi.vercel.app) (create an account to try it; your data is visible only to you) · **Status:** in active development (see [Roadmap](#roadmap))
+**Live:** [interntrack-psi.vercel.app](https://interntrack-psi.vercel.app) (create an account to try it; your data is visible only to you)
 
 ![CI](https://github.com/shathivvv/interntrack/actions/workflows/ci.yml/badge.svg)
 
 ---
 
-## What works today
+## Features
 
-- **Web app:** sign up, then add, edit and delete applications from the browser. The list flags follow-ups that are due or overdue, and applications with no reply after 30 days. Refreshing the page keeps you logged in.
-- **Accounts:** register, log in, log out. Passwords hashed with bcrypt; sessions stored in PostgreSQL and sent as an `httpOnly`, `Secure`, `SameSite=Lax` cookie.
-- **Applications API:** create, list, view, update (partial `PATCH`) and delete job applications.
-- **Ownership on every query:** each user only ever sees their own rows. Requests for someone else's application return `404`, the same as a missing one, so nothing leaks.
-- **Validation:** every request body is checked with Zod (required fields, allowed statuses, real dates, URL/email formats, unknown keys rejected), plus date rules: no future application date, no follow-up before applying.
-- **Tested and deployed on every change:** 16 API tests run in GitHub Actions against a fresh PostgreSQL on every pull request; `main` only accepts changes that pass.
+**Tracking**
+- Add, edit, search, filter and sort applications; a detail page per job. Filters live in the URL, so refresh and Back keep your view.
+- Follow-ups that are due or overdue are flagged, and so are applications with no reply after 30 days.
+- Paste your resume, or import it from a PDF (read in the browser; the file is never uploaded).
+
+**AI**
+- **Fit check** (`POST /api/applications/:id/analyze`): Claude compares a job description with your resume and returns a 0–100 score, matched and missing skills, and a short reason. The output is schema-validated, then **code guardrails** make sure every "matched" skill is actually on your resume and every skill is actually in the job ad.
+- **Similar applications:** each job is embedded (Voyage, 1024 dimensions) and stored in Postgres with pgvector; the detail page shows the closest jobs by meaning.
+- **Ask your applications** (`POST /api/ask`): hybrid RAG. The model gets a facts table of all your applications plus the 5 most relevant job descriptions, and must cite which applications it used. Citations are checked against what it was actually shown.
+- **Assistant agent** (`/api/agent`): a hand-written tool-use loop (max 8 steps) that can search and read your applications freely, but **every change (status, follow-up date) waits for your Approve or Reject**. The run is stored in the database so it can pause between requests.
+
+**Engineering**
+- Accounts with bcrypt and database sessions in an `httpOnly`, `Secure`, `SameSite=Lax` cookie; every query is scoped to the logged-in user, and other users' rows return `404`.
+- Zod validation on every request, plain SQL with numbered migrations, **58 tests** on every pull request in GitHub Actions against a fresh pgvector Postgres; `main` only accepts green changes.
+
+## Measured: the evals
+
+**Fit check** ([server/evals](server/evals)): 11 real job ads with expected answers, including a prompt-injection ad.
+
+| Version | Cases passing | Hallucinated skills caught | Failed calls |
+|---|---|---|---|
+| First prompt | 1/11 (9%) | 12/15 | 4/11 |
+| + prompt v2 and code guardrails | **19/22 (86%)**, 22/22 after calibrating 2 ranges | **50/50** | 0/22 |
+
+**Assistant agent** ([server/evals/agent-cases.json](server/evals/agent-cases.json)): 14 tasks on a fictional dataset, run twice each. Checks: exactly the right changes proposed and nothing else, no guessed ids, replies correct, a rejection respected, and instructions hidden in a job ad ignored.
+
+| Version | Cases passing | Wrong or extra changes | Guessed ids | Injection obeyed |
+|---|---|---|---|---|
+| Baseline | 16/28 (57%) | 0 | 0 | 0/2 |
+| + "plain text only" rule | **28/28 (100%)** | 0 | 0 | 0/2 |
+
+Cost: about **US$0.00045 per fit check** (2.2 s) and **US$0.0006 per agent task** (4.2 s), on Claude Haiku 5.5.
+
+What the evals taught me: validation caught the first real bug (whole sentences returned as "skills"); a prompt only *asks*, while code guardrails *enforce*; the checker needs tests too (three "model failures" were checker bugs); and a perfect first score means the eval is too easy (the agent baseline missed markdown in 12 of 28 replies until the check covered every case).
 
 ## Architecture
 
 ```
-Browser ──► Vercel (React, Vite)
+Browser ──► Vercel (React, Vite, Tailwind)
               │  /api/* rewritten to ▼   (same origin → first-party cookie, no CORS)
-            Render (Node.js, Express) ──► Neon (PostgreSQL, Singapore)
+            Render (Node.js, Express) ──► Neon (PostgreSQL + pgvector, Singapore)
+                     │
+                     ├──► Claude Haiku 5.5  (fit check, answers, agent)
+                     └──► Voyage voyage-4-lite (embeddings)
 ```
 
-- **React** runs in the browser and holds no secrets.
-- **Express** holds every key and is the only thing that talks to the database (and, from B4, to the LLM).
-- **Vercel rewrites `/api/*` to Render**, so the browser sees a single site. The session cookie stays first-party, which browsers that block third-party cookies still accept.
+- **React** runs in the browser and holds no secrets. **Express** holds every key and is the only thing that talks to the database and the AI APIs.
+- Every AI dependency is injected (`createApp({ analyzer, embedder, answerer, agentModel })`), so tests use fakes and never call a paid API.
 
 ## Design decisions
 
 | Decision | Why |
 |---|---|
-| **Sessions in the database, not JWT** | Logging out deletes the session row, so a copied cookie stops working immediately. A JWT stays valid until it expires. |
-| **Session tokens stored as SHA-256 hashes** | If the sessions table leaked, the hashes couldn't be used as cookies. |
-| **bcrypt for passwords, SHA-256 for tokens** | Passwords can be guessed, so the hash is deliberately slow. A 32-byte random token can't be guessed, so a fast hash is enough. |
-| **Same response for "wrong password" and "no such email"** | Login doesn't reveal which emails have accounts (it even runs a dummy bcrypt compare to keep timing equal). |
-| **Plain SQL with numbered migrations** | Every query is visible and parameterized (`$1, $2`); each migration runs once, inside a transaction. |
-| **`status` as `text` + `CHECK`, not an enum** | Adding a status later is a one-line constraint change. |
-| **"Ghosted" is derived, not stored** | Calculated from `status = 'applied'` and an application date over 30 days old, so it can never go stale. |
+| **Sessions in the database, not JWT** | Logging out deletes the session row, so a copied cookie stops working immediately. |
+| **bcrypt for passwords, SHA-256 for session tokens** | Passwords can be guessed, so that hash is deliberately slow; a 32-byte random token can't be. |
+| **LLM output is untrusted input** | Every model answer is schema-validated, then checked by deterministic code before it's saved or shown. |
+| **Hybrid RAG context** | Vector search finds meaning but misses exact facts ("follow-ups this week"), so the model also gets a facts table. |
+| **Writes need approval; reads don't** | The agent can't change data on its own; approved changes are re-checked against the user's own rows before applying. |
+| **Hand-written agent loop** | The loop has to pause for approval across HTTP requests, so the conversation is stored in `agent_runs`; and every step is explainable. |
+| **pgvector inside Neon** | One database for relational data and embeddings, instead of a separate vector store. |
 
-The full spec, written before any code, is in [SPEC.md](SPEC.md).
+The original spec, written before any code, is in [SPEC.md](SPEC.md).
 
-## Roadmap
+## Known limitations and next steps
 
-- [x] Spec, data model and API design
-- [x] Deployed skeleton: React + Express + PostgreSQL, CI on every pull request
-- [x] Applications CRUD API with validation and ownership tests
-- [x] Authentication with database sessions
-- [x] React UI: login, protected routes, applications list, create/edit/delete
-- [ ] Search, filters and a detail view
-- [ ] `/analyze`: LLM job-fit scoring with schema-validated JSON output, measured with an eval set
-- [ ] "Ask your applications": retrieval over stored job descriptions (pgvector) with cited sources
-- [ ] An agent that drafts follow-ups and updates statuses, **only after I approve each change**
+- RAG uses top-5 vector search only; a keyword mentioned once in a long ad can be missed (a live test found 4 of 5 React jobs). Next: hybrid keyword + vector search, measured with `npm run eval:retrieval`.
+- Next: TypeScript, MCP for the agent's tools, and tracing (Langfuse).
 
 ## Tech
 
-**Frontend:** React 19, React Router, Tailwind CSS, Vite · **Backend:** Node.js 24, Express 5, Zod, bcryptjs · **Database:** PostgreSQL on Neon · **Testing / CI:** `node:test`, supertest, GitHub Actions · **Hosting:** Vercel, Render
+**Frontend:** React 19, React Router, Tailwind CSS, Vite, pdf.js · **Backend:** Node.js 24, Express 5, Zod, bcryptjs · **AI:** Claude Haiku 5.5 (Anthropic SDK), Voyage voyage-4-lite · **Database:** PostgreSQL + pgvector on Neon · **Testing / CI:** `node:test`, supertest, GitHub Actions · **Hosting:** Vercel, Render
 
 ## Run it locally
 
-Needs Node.js 24 and a PostgreSQL connection string (I use a Neon branch).
+Needs Node.js 24 and a PostgreSQL connection string with pgvector (I use a Neon branch).
 
 ```bash
 # API
 cd server
-cp .env.example .env        # then fill in DATABASE_URL
+cp .env.example .env        # DATABASE_URL, plus ANTHROPIC_API_KEY / VOYAGE_API_KEY for the AI features
 npm install
 npm run migrate
 npm run dev                 # http://localhost:3000
@@ -77,8 +100,11 @@ npm install
 npm run dev                 # http://localhost:5173, proxies /api to :3000
 ```
 
-Tests use their own database (`server/.env.test`), because they empty the tables:
+Tests use their own database (`server/.env.test`) and fake AI clients:
 
 ```bash
 cd server && npm test
+npm run eval                # fit-check evals (real model, ~US$0.01)
+npm run eval:agent          # agent evals (real model, ~US$0.015)
+npm run eval:retrieval      # retrieval hit rate (Voyage)
 ```
