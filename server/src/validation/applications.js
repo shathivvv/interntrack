@@ -59,7 +59,7 @@ export const listQuerySchema = z.strictObject({
 });
 
 // Today's date in Malaysia as "YYYY-MM-DD" (en-CA formats dates that way).
-function todayInMalaysia() {
+export function todayInMalaysia() {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" });
 }
 

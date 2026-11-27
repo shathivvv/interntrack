@@ -11,7 +11,8 @@
     "start": "node src/index.js",
     "migrate": "node --env-file-if-exists=.env src/migrate.js",
     "test": "node --env-file-if-exists=.env.test --test --test-concurrency=1 \"test/**/*.test.js\"",
-    "eval": "node --env-file-if-exists=.env evals/run.js"
+    "eval": "node --env-file-if-exists=.env evals/run.js",
+    "eval:retrieval": "node --env-file-if-exists=.env evals/retrieval.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.14.0",

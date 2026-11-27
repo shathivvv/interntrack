@@ -7,6 +7,8 @@ import { authRouter } from "./routes/auth.js";
 import { profileRouter } from "./routes/profile.js";
 import { createClaudeAnalyzer } from "./ai/analyzer.js";
 import { createVoyageEmbedder } from "./ai/embedder.js";
+import { createClaudeAnswerer } from "./ai/answerer.js";
+import { askRouter } from "./routes/ask.js";
 
 // Builds the Express app. index.js starts it; tests import it and call routes
 // with supertest without opening a real port.
@@ -20,6 +22,7 @@ export function createApp({
   authenticate = requireAuth,
   analyzer = createClaudeAnalyzer(),
   embedder = createVoyageEmbedder(),
+  answerer = createClaudeAnswerer(), // "Ask your applications" (RAG), same pattern again
 } = {}) {
   const app = express();
 
@@ -43,6 +46,7 @@ export function createApp({
   app.use("/api/auth", authRouter({ authenticate }));
   app.use("/api/profile", profileRouter({ authenticate }));
   app.use("/api/applications", applicationsRouter({ authenticate, analyzer, embedder }));
+  app.use("/api/ask", askRouter({ authenticate, answerer, embedder }));
 
   // Unknown routes get the spec's error shape instead of Express's HTML page.
   app.use((req, res) => {

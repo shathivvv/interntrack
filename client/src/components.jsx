@@ -31,16 +31,22 @@ export function Layout() {
           </Link>
           <div className="flex items-center gap-3 text-sm">
             <span className="hidden text-slate-500 md:inline">{user.email}</span>
-            {/* A real button, not plain text: people only click what looks clickable.
-                NavLink highlights it while you're on the Profile page. */}
-            <NavLink
-              to="/profile"
-              className={({ isActive }) =>
-                `btn-secondary px-3 py-1.5 ${isActive ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : ''}`
-              }
-            >
-              Profile
-            </NavLink>
+            {/* Real buttons, not plain text: people only click what looks clickable.
+                NavLink highlights the one for the page you're on. */}
+            {[
+              ['/ask', 'Ask'],
+              ['/profile', 'Profile'],
+            ].map(([to, label]) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `btn-secondary px-3 py-1.5 ${isActive ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : ''}`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
             <button onClick={logout} className="btn-secondary px-3 py-1.5">
               Log out
             </button>
