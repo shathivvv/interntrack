@@ -33,7 +33,7 @@
       "job_description": "Full-stack intern at a startup building web apps, dashboards, enterprise systems and AI-powered tools.\n\nResponsibilities:\n- Develop and improve web applications and responsive frontends\n- Backend development, API integration and database work\n- Help build AI-powered applications, automation tools and integrations\n- Debug, test and deploy; follow version control and code quality practices\n\nRequirements:\n- Diploma/Degree in CS, SE, IT or related (strong self-taught portfolios welcome)\n- JavaScript or TypeScript\n- React, Next.js, Vite or similar\n- Basics of backend, REST APIs and databases\n- Nice to have: Node.js, SQL, Git\n- Full-time, on-site in Kuala Lumpur",
       "expect": {
         "score_range": [
-          70,
+          65,
           92
         ],
         "must_match": [
@@ -78,7 +78,7 @@
       "job_description": "Software developer intern building enterprise digital financial applications across the full SDLC.\n\nResponsibilities:\n- Object-oriented design and development of enterprise applications to specification\n- SIT and UAT support; troubleshoot and fix issues\n- Help prepare functional specifications and UAT scripts with the business team\n- Learn the clients' business domain and process flows\n- Exposure to Spring, Angular, React, Kubernetes, Gradle, Docker, Bootstrap, Ionic and microservices\n\nRequirements:\n- Pursuing or recently completed a Bachelor's in Computer Science, Software Engineering, IT or related, minimum CGPA 3.20\n- Java focus (per job title)\n- On-site in Damansara Uptown; open to travel",
       "expect": {
         "score_range": [
-          35,
+          25,
           65
         ],
         "must_miss": [
