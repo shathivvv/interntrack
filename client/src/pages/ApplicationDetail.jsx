@@ -6,6 +6,7 @@ import { ErrorBanner, PageMessage, StatusBadge } from '../components.jsx'
 import { INTERVIEW_ROUNDS, METHODS } from '../constants.js'
 import { hints } from './ApplicationsList.jsx'
 import { FitCard } from '../FitCard.jsx'
+import SimilarApplications from '../SimilarApplications.jsx'
 
 const labelOf = (list, value) => list.find((o) => o.value === value)?.label ?? value
 
@@ -114,6 +115,8 @@ export default function ApplicationDetail() {
             so anything HTML-like in an ad is shown as text, never run. */}
         <p className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700">{app.job_description}</p>
       </section>
+
+      <SimilarApplications id={app.id} />
 
       <p className="mt-4 text-xs text-slate-400">
         Added {new Date(app.created_at).toLocaleDateString('en-GB')} · Last updated {new Date(app.updated_at).toLocaleDateString('en-GB')}

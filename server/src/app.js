@@ -6,6 +6,7 @@ import { applicationsRouter } from "./routes/applications.js";
 import { authRouter } from "./routes/auth.js";
 import { profileRouter } from "./routes/profile.js";
 import { createClaudeAnalyzer } from "./ai/analyzer.js";
+import { createVoyageEmbedder } from "./ai/embedder.js";
 
 // Builds the Express app. index.js starts it; tests import it and call routes
 // with supertest without opening a real port.
@@ -14,7 +15,12 @@ import { createClaudeAnalyzer } from "./ai/analyzer.js";
 // a fake that sets req.user directly, the same idea as FakeOCR in the FYP tests.
 // `analyzer` works the same way: the real one calls Claude (and is null when
 // ANTHROPIC_API_KEY isn't set); tests pass a fake that returns a fixed result.
-export function createApp({ authenticate = requireAuth, analyzer = createClaudeAnalyzer() } = {}) {
+// `embedder` too: Voyage in production (null without VOYAGE_API_KEY), a fake in tests.
+export function createApp({
+  authenticate = requireAuth,
+  analyzer = createClaudeAnalyzer(),
+  embedder = createVoyageEmbedder(),
+} = {}) {
   const app = express();
 
   // Parse JSON request bodies into req.body (needed for POST/PATCH).
@@ -36,7 +42,7 @@ export function createApp({ authenticate = requireAuth, analyzer = createClaudeA
 
   app.use("/api/auth", authRouter({ authenticate }));
   app.use("/api/profile", profileRouter({ authenticate }));
-  app.use("/api/applications", applicationsRouter({ authenticate, analyzer }));
+  app.use("/api/applications", applicationsRouter({ authenticate, analyzer, embedder }));
 
   // Unknown routes get the spec's error shape instead of Express's HTML page.
   app.use((req, res) => {

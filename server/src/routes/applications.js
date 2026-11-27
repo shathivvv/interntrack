@@ -9,6 +9,10 @@ import {
   STATUSES,
 } from "../validation/applications.js";
 import { AnalyzeError } from "../ai/analyzer.js";
+import { embedApplication } from "../ai/embeddings.js";
+
+// The fields that make up the embedded text (see ai/embeddings.js).
+const EMBEDDED_FIELDS = ["role", "company_name", "job_description"];
 
 // Each allowed ?sort= value maps to a fixed ORDER BY. The user picks a key, never SQL text.
 // "id DESC" at the end breaks ties, so the order is always the same between requests.
@@ -47,7 +51,8 @@ const notFound = (res) => res.status(404).json({ error: "Application not found" 
 
 // `authenticate` runs before every route here and sets req.user (see middleware/auth.js).
 // `analyzer` is the function that calls the LLM (ai/analyzer.js); tests pass a fake one.
-export function applicationsRouter({ authenticate, analyzer }) {
+// `embedder` turns text into vectors (ai/embedder.js); also injectable, also null without a key.
+export function applicationsRouter({ authenticate, analyzer, embedder }) {
   const router = Router();
   router.use(authenticate);
 
@@ -126,6 +131,8 @@ export function applicationsRouter({ authenticate, analyzer }) {
       `INSERT INTO applications (${columns}) VALUES (${placeholders}) RETURNING ${COLUMNS}`,
       [req.user.id, ...values],
     );
+    // Embed it for similarity search. A failure is logged, never fails the save.
+    await embedApplication(embedder, rows[0].id);
     res.status(201).json(rows[0]);
   });
 
@@ -160,7 +167,35 @@ export function applicationsRouter({ authenticate, analyzer }) {
       [id, req.user.id, ...Object.values(parsed.data)],
     );
     if (rows.length === 0) return notFound(res); // deleted between the SELECT and the UPDATE
+    // The embedding describes role + company + description; re-embed only if one of those changed.
+    if (fields.some((f) => EMBEDDED_FIELDS.includes(f))) await embedApplication(embedder, id);
     res.json(rows[0]);
+  });
+
+  // GET /api/applications/:id/similar?limit=3: my other applications closest in meaning,
+  // by cosine distance between embeddings (<=> is pgvector's cosine distance: 0 = same direction).
+  router.get("/:id/similar", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return notFound(res);
+    const limit = Math.min(Math.max(Number(req.query.limit) || 3, 1), 10);
+
+    const own = await pool.query("SELECT embedding IS NOT NULL AS has FROM applications WHERE id = $1 AND user_id = $2", [id, req.user.id]);
+    if (own.rows.length === 0) return notFound(res);
+    if (!embedder) return res.json({ available: false, items: [] });
+    // Not embedded yet (created before this feature, or Voyage was down): embed it now.
+    if (!own.rows[0].has && !(await embedApplication(embedder, id))) return res.json({ available: false, items: [] });
+
+    const { rows } = await pool.query(
+      `WITH target AS (SELECT embedding FROM applications WHERE id = $1 AND user_id = $2)
+       SELECT a.id, a.company_name, a.role, a.status, a.fit_score,
+              round((1 - (a.embedding <=> target.embedding))::numeric, 3)::float AS similarity
+       FROM applications a, target
+       WHERE a.user_id = $2 AND a.id <> $1 AND a.embedding IS NOT NULL
+       ORDER BY a.embedding <=> target.embedding
+       LIMIT $3`,
+      [id, req.user.id, limit],
+    );
+    res.json({ available: true, items: rows });
   });
 
   // POST /api/applications/:id/analyze: ask the LLM how well my resume fits this job,
