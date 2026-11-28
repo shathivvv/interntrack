@@ -6,12 +6,6 @@
 
 ![CI](https://github.com/shathivvv/interntrack/actions/workflows/ci.yml/badge.svg)
 
-## Demo
-
-*A demo account with fictional companies and a fictional resume: the applications list, an AI fit check, similar applications, Ask your applications, and the assistant proposing a change that is applied only after Approve.*
-
-![InternTrack demo](docs/demo.gif)
-
 ## Screenshots
 
 | Applications | AI fit check |
