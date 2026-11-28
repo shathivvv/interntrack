@@ -1,15 +1,78 @@
 {
   "_about": "Retrieval eval: does the RIGHT job description come back in the top k for a question? Corpus = the 11 job descriptions in cases.json. expected = ids of the cases a good search must find.",
   "questions": [
-    { "q": "Which internships use Java?", "expected": ["cybervillage-java", "ytl-backend-java"] },
-    { "q": "AI roles working with computer vision and RAG", "expected": ["lenovo-ai"] },
-    { "q": "React frontend developer jobs", "expected": ["tiancheng-fullstack", "mka-frontend"] },
-    { "q": "PHP web development with a training programme", "expected": ["tyrell-php"] },
-    { "q": "Automating finance records and electricity bills", "expected": ["sunway-automation"] },
-    { "q": "Google Apps Script and cloud work on GCP or AWS", "expected": ["worq-swe"] },
-    { "q": ".NET and Azure consulting with business analysis and user stories", "expected": ["agtiv-swe-ba"] },
-    { "q": "Embedded firmware for sensors", "expected": ["injection-rust"] },
-    { "q": "Web or mobile apps with Laravel or Flutter", "expected": ["xenber-dev"] },
-    { "q": "Backend for a digital bank, distributed systems and messaging", "expected": ["ytl-backend-java"] }
+    {
+      "q": "Which internships use Java?",
+      "expected": [
+        "cybervillage-java",
+        "ytl-backend-java"
+      ]
+    },
+    {
+      "q": "AI roles working with computer vision and RAG",
+      "expected": [
+        "lenovo-ai"
+      ]
+    },
+    {
+      "q": "React frontend developer jobs",
+      "expected": [
+        "tiancheng-fullstack",
+        "mka-frontend"
+      ]
+    },
+    {
+      "q": "PHP web development with a training programme",
+      "expected": [
+        "tyrell-php"
+      ]
+    },
+    {
+      "q": "Automating finance records and electricity bills",
+      "expected": [
+        "sunway-automation"
+      ]
+    },
+    {
+      "q": "Google Apps Script and cloud work on GCP or AWS",
+      "expected": [
+        "worq-swe"
+      ]
+    },
+    {
+      "q": ".NET and Azure consulting with business analysis and user stories",
+      "expected": [
+        "agtiv-swe-ba"
+      ]
+    },
+    {
+      "q": "Embedded firmware for sensors",
+      "expected": [
+        "injection-rust"
+      ]
+    },
+    {
+      "q": "Web or mobile apps with Laravel or Flutter",
+      "expected": [
+        "xenber-dev"
+      ]
+    },
+    {
+      "q": "Backend for a digital bank, distributed systems and messaging",
+      "expected": [
+        "ytl-backend-java"
+      ]
+    },
+    {
+      "q": "Which jobs mention React?",
+      "expected": [
+        "tiancheng-fullstack",
+        "agtiv-swe-ba",
+        "mka-frontend",
+        "xenber-dev",
+        "cybervillage-java"
+      ],
+      "note": "Live miss on 2026-11-27: Cyber Village lists React once, in a Java ad."
+    }
   ]
 }
