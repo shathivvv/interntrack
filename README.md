@@ -6,6 +6,18 @@
 
 ![CI](https://github.com/shathivvv/interntrack/actions/workflows/ci.yml/badge.svg)
 
+## Screenshots
+
+*From a demo account with fictional companies and a fictional resume.*
+
+| Applications | AI fit check |
+|---|---|
+| ![Applications list with status, fit and follow-up badges](docs/screenshots/applications.jpg) | ![Fit check: score, reason, matched and missing skills](docs/screenshots/fit-check.jpg) |
+| **Ask your applications** (hybrid RAG with sources) | **Assistant** (every change waits for approval) |
+| ![Ask: answer with cited applications](docs/screenshots/ask.jpg) | ![Assistant proposing a status change with Approve / Reject](docs/screenshots/assistant-approval.jpg) |
+
+Similar applications by meaning (embeddings): [screenshot](docs/screenshots/similar.jpg).
+
 ---
 
 ## Features
