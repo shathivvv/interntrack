@@ -13,7 +13,8 @@
     "test": "node --env-file-if-exists=.env.test --test --test-concurrency=1 \"test/**/*.test.js\"",
     "eval": "node --env-file-if-exists=.env evals/run.js",
     "eval:retrieval": "node --env-file-if-exists=.env evals/retrieval.js",
-    "eval:agent": "node --env-file-if-exists=.env evals/agent.js"
+    "eval:agent": "node --env-file-if-exists=.env evals/agent.js",
+    "eval:fixture": "node --env-file-if-exists=.env evals/build-retrieval-fixture.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.14.0",

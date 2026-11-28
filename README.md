@@ -18,12 +18,12 @@
 **AI**
 - **Fit check** (`POST /api/applications/:id/analyze`): Claude compares a job description with your resume and returns a 0–100 score, matched and missing skills, and a short reason. The output is schema-validated, then **code guardrails** make sure every "matched" skill is actually on your resume and every skill is actually in the job ad.
 - **Similar applications:** each job is embedded (Voyage, 1024 dimensions) and stored in Postgres with pgvector; the detail page shows the closest jobs by meaning.
-- **Ask your applications** (`POST /api/ask`): hybrid RAG. The model gets a facts table of all your applications plus the 5 most relevant job descriptions, and must cite which applications it used. Citations are checked against what it was actually shown.
+- **Ask your applications** (`POST /api/ask`): hybrid RAG. The model gets a facts table of all your applications plus the 5 most relevant job descriptions (found by meaning AND by keyword), and must cite which applications it used. Citations are checked against what it was actually shown.
 - **Assistant agent** (`/api/agent`): a hand-written tool-use loop (max 8 steps) that can search and read your applications freely, but **every change (status, follow-up date) waits for your Approve or Reject**. The run is stored in the database so it can pause between requests.
 
 **Engineering**
 - Accounts with bcrypt and database sessions in an `httpOnly`, `Secure`, `SameSite=Lax` cookie; every query is scoped to the logged-in user, and other users' rows return `404`.
-- Zod validation on every request, plain SQL with numbered migrations, **58 tests** on every pull request in GitHub Actions against a fresh pgvector Postgres; `main` only accepts green changes.
+- Zod validation on every request, plain SQL with numbered migrations, **61 tests** on every pull request in GitHub Actions against a fresh pgvector Postgres; `main` only accepts green changes.
 
 ## Measured: the evals
 
@@ -73,9 +73,19 @@ Browser ──► Vercel (React, Vite, Tailwind)
 
 The original spec, written before any code, is in [SPEC.md](SPEC.md).
 
+**Retrieval for Ask** (`test/retrieval.test.js`, runs in CI on real Voyage vectors and the real SQL): 11 questions over 11 job ads.
+
+| Search | Hit rate (top 5) | Recall (top 5) | Missed |
+|---|---|---|---|
+| Vector only (pgvector) | 100% | 94% | "Which jobs mention React?": a Java ad that lists React once |
+| **Hybrid** (vector + Postgres full-text, Reciprocal Rank Fusion) | **100%** | **100%** | none |
+
+That miss was first spotted on the live site; it's now a test that fails if hybrid ever does worse than vector-only.
+
 ## Known limitations and next steps
 
-- RAG uses top-5 vector search only; a keyword mentioned once in a long ad can be missed (a live test found 4 of 5 React jobs). Next: hybrid keyword + vector search, measured with `npm run eval:retrieval`.
+- The evals are small (11 fit-check cases, 14 agent tasks, 11 retrieval questions); next is growing them from real usage.
+- Voyage's free tier without a payment method allows 3 requests a minute; embedding failures never block a save, and a backfill catches up.
 - Next: TypeScript, MCP for the agent's tools, and tracing (Langfuse).
 
 ## Tech
